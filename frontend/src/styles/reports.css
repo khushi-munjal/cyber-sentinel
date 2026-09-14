@@ -1,0 +1,363 @@
+/* =========================
+   FORENSIC REPORTS PAGE
+   ========================= */
+
+.reports-page {
+  width: 100%;
+}
+
+.reports-header {
+  margin-bottom: 24px;
+}
+
+.reports-header h1 {
+  margin: 0 0 6px;
+  color: #f4f7fb;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.reports-header p {
+  margin: 0;
+  color: #8f9bad;
+  font-size: 14px;
+}
+
+/* =========================
+   REPORT SUMMARY
+   ========================= */
+
+.reports-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.report-summary-card {
+  padding: 18px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.report-summary-label {
+  margin-bottom: 7px;
+  color: #7f8a9d;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.report-summary-value {
+  color: #f1f4f8;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* =========================
+   REPORT TOOLBAR
+   ========================= */
+
+.reports-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 15px 17px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 12px;
+}
+
+.reports-search {
+  flex: 1;
+  max-width: 360px;
+  position: relative;
+}
+
+.reports-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #2a3649;
+  border-radius: 8px;
+  outline: none;
+  background: #0c131f;
+  color: #dfe5ed;
+  font-size: 13px;
+}
+
+.reports-search input::placeholder {
+  color: #657186;
+}
+
+.reports-search input:focus {
+  border-color: #4b7bec;
+}
+
+/* =========================
+   REPORT TABLE
+   ========================= */
+
+.reports-table-wrapper {
+  overflow-x: auto;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.reports-table th {
+  padding: 14px 15px;
+  border-bottom: 1px solid #273246;
+  background: #111a29;
+  color: #7f8a9d;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.reports-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #1d2737;
+  color: #cbd4df;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.reports-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.reports-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.reports-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* =========================
+   CASE ID
+   ========================= */
+
+.report-case-id {
+  color: #dce6f5;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* =========================
+   REPORT TYPE
+   ========================= */
+
+.report-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid #2b374a;
+  border-radius: 999px;
+  background: #0d1421;
+  color: #aab6c8;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* =========================
+   RISK BADGES
+   ========================= */
+
+.report-risk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 65px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.report-risk.critical {
+  background: rgba(205, 67, 67, 0.13);
+  border: 1px solid rgba(205, 67, 67, 0.28);
+  color: #ed9292;
+}
+
+.report-risk.high {
+  background: rgba(216, 119, 62, 0.13);
+  border: 1px solid rgba(216, 119, 62, 0.28);
+  color: #e9a375;
+}
+
+.report-risk.medium {
+  background: rgba(218, 172, 65, 0.13);
+  border: 1px solid rgba(218, 172, 65, 0.28);
+  color: #e2c16d;
+}
+
+.report-risk.low {
+  background: rgba(53, 161, 103, 0.13);
+  border: 1px solid rgba(53, 161, 103, 0.28);
+  color: #81d7a5;
+}
+
+/* =========================
+   REPORT DATE
+   ========================= */
+
+.report-date {
+  color: #8c98aa;
+  white-space: nowrap;
+}
+
+/* =========================
+   REPORT ACTIONS
+   ========================= */
+
+.report-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border: 1px solid #2a374b;
+  border-radius: 8px;
+  background: #111a29;
+  color: #bfc9d8;
+  cursor: pointer;
+  font-size: 11px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.report-action-btn:hover {
+  background: #172236;
+  border-color: #40516b;
+  transform: translateY(-1px);
+}
+
+.report-action-btn.download {
+  background: #17294d;
+  border-color: #35599d;
+  color: #dce8ff;
+}
+
+.report-action-btn.download:hover {
+  background: #1d3767;
+}
+
+/* =========================
+   REPORT EMPTY STATE
+   ========================= */
+
+.reports-empty {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.reports-empty-icon {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: rgba(75, 123, 236, 0.1);
+  color: #6d95ef;
+}
+
+.reports-empty h3 {
+  margin: 0 0 7px;
+  color: #e9edf4;
+  font-size: 17px;
+}
+
+.reports-empty p {
+  max-width: 450px;
+  margin: 0;
+  color: #7d899d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================
+   REPORT STATUS
+   ========================= */
+
+.report-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8fd3a8;
+  font-size: 11px;
+}
+
+.report-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #63c58b;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 900px) {
+  .reports-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .reports-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reports-search {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .reports-header h1 {
+    font-size: 24px;
+  }
+
+  .report-summary-card {
+    padding: 15px;
+  }
+
+  .reports-table th,
+  .reports-table td {
+    padding: 11px 12px;
+  }
+}

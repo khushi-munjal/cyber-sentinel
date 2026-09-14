@@ -1,0 +1,23 @@
+From: Project Coordinator <coordinator@college.example>
+To: student@example.com
+Subject: Project Review Meeting
+Date: Sat, 13 Sep 2026 14:30:00 +0530
+Message-ID: <legitimate-test-001@college.example>
+Reply-To: coordinator@college.example
+Return-Path: <coordinator@college.example>
+Authentication-Results: mail.example.com; spf=pass; dkim=pass; dmarc=pass
+Received-SPF: pass
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Student,
+
+This is a reminder that your project review meeting is scheduled
+for Monday at 10:00 AM in Lab 204.
+
+Please bring your project documentation and presentation.
+
+There is no action required before the meeting.
+
+Regards,
+Project Coordinator
+College Project Team

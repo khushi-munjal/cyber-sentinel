@@ -1,0 +1,26 @@
+# Python virtual environment
+backend/venv/
+
+# Python cache
+__pycache__/
+backend/__pycache__/
+backend/*/__pycache__/
+*.pyc
+
+# Environment / secrets
+.env
+backend/.env
+
+# Node dependencies
+frontend/node_modules/
+
+# Frontend build
+frontend/dist/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# VS Code
+.vscode/

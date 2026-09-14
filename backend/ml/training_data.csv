@@ -1,0 +1,129 @@
+text,label
+"Your bank account has been flagged. Verify your account immediately by clicking the secure link and entering your username and password.",phishing
+"Urgent security alert. Your online banking access will be suspended unless you confirm your account details now.",phishing
+"Click the verification link below to prevent your bank account from being locked today.",phishing
+"Your payment account requires immediate verification. Enter your login credentials to continue.",phishing
+"Unusual activity was detected on your account. Verify your identity through the attached security link.",phishing
+"Your banking profile has been temporarily restricted. Confirm your personal information immediately.",phishing
+"Security notification: your account will be closed within 24 hours unless you complete verification.",phishing
+"Please verify your bank login information using the secure portal below.",phishing
+"Your account security check is pending. Sign in immediately to restore access.",phishing
+"Failure to verify your banking account may result in permanent suspension. Complete verification now.",phishing
+"Your bank security team detected suspicious activity. Confirm your identity immediately.",phishing
+"Your online account has been selected for a mandatory security verification.",phishing
+"Immediate action required. Verify your banking credentials to avoid service interruption.",phishing
+"Click here to validate your account and prevent unauthorized access.",phishing
+"Your financial account requires identity confirmation. Enter your login details on the verification page.",phishing
+"Security warning: suspicious login detected. Confirm your account information now.",phishing
+"Your account is at risk of suspension. Follow the verification link and provide your credentials.",phishing
+"Verify your banking profile today because your account security review is incomplete.",phishing
+"Your online banking session has expired. Sign in again using the secure verification link.",phishing
+"Urgent account verification required to keep your banking services active.",phishing
+"The sender claims to be your bank but uses a visually similar domain and asks you to verify your password.",spoofing
+"A message impersonates the company security department and requests sensitive information from the employee.",spoofing
+"The email address looks like the official executive address but contains a different domain.",spoofing
+"This message uses a fake display name matching the bank security team.",spoofing
+"The sender domain differs from the organization name shown in the From field.",spoofing
+"The email claims to come from Microsoft support but the actual sender domain is unrelated.",spoofing
+"The message impersonates a trusted administrator and requests confidential account information.",spoofing
+"The sender uses a forged identity and asks the recipient to reply to an unrelated address.",spoofing
+"The email pretends to be from the company CEO using an external domain.",spoofing
+"The message imitates an official security notification but authentication checks fail.",spoofing
+"The sender appears to be a known executive but the Reply-To address belongs to another domain.",spoofing
+"The email claims to originate from an internal department but the sending infrastructure is external.",spoofing
+"An attacker impersonates the finance department and requests a change to payment instructions.",bec
+"CEO requests an urgent wire transfer to a new vendor account before the end of the day.",bec
+"Please keep this payment request confidential and send the funds immediately.",bec
+"The executive is traveling and asks the employee to process an urgent invoice without normal approval.",bec
+"Finance staff receive a message from an executive requesting a transfer to an unfamiliar bank account.",bec
+"An attacker poses as the company director and asks for sensitive payroll information.",bec
+"The CEO urgently requests gift card purchases and asks the employee to send the codes.",bec
+"An executive email asks the accounting team to bypass the normal payment verification process.",bec
+"The sender claims to be the CFO and requests an immediate confidential transfer.",bec
+"A business email compromise attempt asks an employee to change the beneficiary account for a payment.",bec
+"Please send the employee salary spreadsheet to this external address for urgent review.",bec
+"The company director asks finance to transfer money to a new account without confirmation.",bec
+"Enter your corporate username and password to access the shared document.",credential_theft
+"Your Microsoft account requires password verification. Submit your login credentials through this page.",credential_theft
+"Complete the employee portal login by entering your username, password, and security answer.",credential_theft
+"The document cannot be opened until you authenticate using your corporate credentials.",credential_theft
+"Please provide your email password to restore access to the company mailbox.",credential_theft
+"Your cloud account session has expired. Sign in again using the verification form.",credential_theft
+"Security verification requires your corporate username and password.",credential_theft
+"Confirm your identity by entering your login credentials into the attached portal.",credential_theft
+"Your employee account needs authentication before you can access the confidential document.",credential_theft
+"Use the login form below to verify your corporate account.",credential_theft
+"Enter your password and authentication code to unlock your company account.",credential_theft
+"Your mailbox credentials are required to complete the security verification process.",credential_theft
+"Your invoice shows an unexpected payment. Send the outstanding amount immediately to avoid penalties.",financial_fraud
+"Congratulations, you have received a refund. Pay a small processing fee to release the money.",financial_fraud
+"Your account has been selected for a financial reimbursement. Provide your bank details to receive the payment.",financial_fraud
+"An urgent invoice requires payment through the attached bank account information.",financial_fraud
+"Your payment is overdue. Transfer the amount immediately to prevent legal action.",financial_fraud
+"Confirm your bank account details to receive your unexpected financial refund.",financial_fraud
+"Please pay the attached invoice using the new beneficiary account listed in this message.",financial_fraud
+"You are eligible for a large refund. Send the required verification fee before the refund can be processed.",financial_fraud
+"An outstanding transaction must be settled immediately using the payment link provided.",financial_fraud
+"Your account has been charged incorrectly. Provide banking details so we can process the refund.",financial_fraud
+"Transfer the requested amount today to avoid cancellation of the financial transaction.",financial_fraud
+"Payment verification requires your card and bank information.",financial_fraud
+"Your OTP is required immediately to complete the transaction.",otp_fraud
+"Never share your OTP, but this message asks you to provide the six digit verification code.",otp_fraud
+"Your banking transaction is pending. Send the OTP to authorize the payment.",otp_fraud
+"Enter the verification code received on your phone to complete the refund.",otp_fraud
+"Provide the one time password to confirm your account upgrade.",otp_fraud
+"Your OTP is needed to prevent your account from being blocked.",otp_fraud
+"Confirm the transaction by replying with the OTP sent to your registered mobile number.",otp_fraud
+"Security verification requires the temporary authentication code from your phone.",otp_fraud
+"Share the six digit OTP to complete the requested banking operation.",otp_fraud
+"Your payment authorization code is required immediately.",otp_fraud
+"Enter the one time verification code to release the pending transaction.",otp_fraud
+"Send the OTP from your phone to the support representative for verification.",otp_fraud
+"We detected a login from a new device. Reset your password using the verification link.",account_takeover
+"Your account may have been compromised. Confirm your credentials to restore access.",account_takeover
+"Multiple failed login attempts were detected. Sign in to secure your account.",account_takeover
+"An unknown device accessed your mailbox. Verify your identity immediately.",account_takeover
+"Your password has been changed unexpectedly. Use this link to recover the account.",account_takeover
+"Security alert: a new session was created from an unfamiliar location.",account_takeover
+"Your account recovery request is pending. Confirm your personal details to regain access.",account_takeover
+"Someone attempted to access your account. Complete the security check immediately.",account_takeover
+"Your email account is at risk. Reset your password using the provided verification page.",account_takeover
+"Unauthorized login activity was detected. Confirm your account information now.",account_takeover
+"Your account session was hijacked. Follow the recovery instructions to regain control.",account_takeover
+"Verify the recent login before your account is permanently restricted.",account_takeover
+"Your manager needs this information urgently. Do not contact anyone else before sending it.",social_engineering
+"This is a confidential emergency. Send the requested employee data immediately.",social_engineering
+"Please bypass the normal approval process because this request is extremely urgent.",social_engineering
+"The sender pressures the recipient to act quickly without verifying the request.",social_engineering
+"Do not tell the security team about this request. Send the confidential document immediately.",social_engineering
+"An urgent message attempts to create fear and pressure the employee into revealing information.",social_engineering
+"The sender claims there is an emergency and asks the employee to ignore standard procedures.",social_engineering
+"Please keep this request secret and provide the requested company information immediately.",social_engineering
+"Your supervisor is unavailable, so send the confidential file directly to this external address.",social_engineering
+"The message uses authority and urgency to pressure the recipient into taking an unusual action.",social_engineering
+"An emergency request asks the employee to disclose internal information without verification.",social_engineering
+"Act immediately and do not discuss this request with your colleagues.",social_engineering
+"Open the attached invoice immediately. The attachment contains a macro required to view the document.",malware_delivery
+"Download and execute the attached executable to install the required security update.",malware_delivery
+"The invoice attachment contains a suspicious executable file that must be opened immediately.",malware_delivery
+"Enable macros in the attached document to display the complete invoice.",malware_delivery
+"Download the attached ZIP archive and run the included application to process the payment.",malware_delivery
+"Your system update is attached as an executable file. Run it to complete the installation.",malware_delivery
+"Open the attached document and enable content to activate the required functionality.",malware_delivery
+"The message contains a malicious attachment disguised as an invoice.",malware_delivery
+"Run the attached installer to secure your computer immediately.",malware_delivery
+"The email asks the recipient to execute an unknown program received as an attachment.",malware_delivery
+"Download the compressed attachment and launch the executable inside it.",malware_delivery
+"Enable macros and execute the attached file to complete the requested business process.",malware_delivery
+"Your weekly project meeting is scheduled for Monday at 10 AM in Conference Room 2.",legitimate
+"Please find the meeting agenda attached for tomorrow's project discussion.",legitimate
+"The development team has completed the sprint review and will meet next Monday.",legitimate
+"Your college training session is scheduled for Friday at 11 AM.",legitimate
+"Please review the project documentation before our regular team meeting.",legitimate
+"Thank you for attending today's project discussion. The meeting notes are attached.",legitimate
+"The monthly team meeting will be held at the usual time.",legitimate
+"Please find the approved project report attached for your records.",legitimate
+"Your course registration has been successfully completed. No further action is required.",legitimate
+"This is a routine notification regarding the upcoming training session.",legitimate
+"The team has shared the updated project schedule for review.",legitimate
+"Your appointment has been confirmed for the scheduled date and time.",legitimate

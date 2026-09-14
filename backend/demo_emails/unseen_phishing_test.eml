@@ -1,0 +1,28 @@
+From: Bank Security <alerts@bank-security.example>
+To: user@example.com
+Subject: Your Account Will Be Locked Today
+Date: Sun, 13 Sep 2026 16:00:00 +0530
+Message-ID: <phishing-test-002@bank-security.example>
+Reply-To: security-update@fake-login.example
+Return-Path: <mailer@unknown-mail.example>
+Authentication-Results: mail.example.com; spf=fail; dkim=fail; dmarc=fail
+Received-SPF: fail
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Customer,
+
+We detected unusual activity on your bank account.
+
+Your account will be permanently locked today unless you
+complete the security verification immediately.
+
+Click the link below to confirm your identity, verify your
+username and password, and prevent account suspension:
+
+https://secure-verification.example/login
+
+Failure to complete verification may result in restricted
+access to your account.
+
+Regards,
+Bank Security Team

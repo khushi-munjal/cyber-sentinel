@@ -1,0 +1,351 @@
+/* =========================
+   THREAT GRAPH PAGE
+   ========================= */
+
+.graph-page {
+  width: 100%;
+}
+
+.graph-header {
+  margin-bottom: 24px;
+}
+
+.graph-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f4f7fb;
+}
+
+.graph-header p {
+  margin: 0;
+  color: #8f9bad;
+  font-size: 14px;
+}
+
+/* =========================
+   GRAPH TOOLBAR
+   ========================= */
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.graph-toolbar-left,
+.graph-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.graph-toolbar label {
+  color: #a7b1c2;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.graph-toolbar select {
+  min-width: 210px;
+  padding: 10px 12px;
+  border: 1px solid #2b374a;
+  border-radius: 8px;
+  background: #0d1421;
+  color: #e6ebf2;
+  outline: none;
+  font-size: 13px;
+}
+
+.graph-toolbar select:focus {
+  border-color: #4b7bec;
+}
+
+/* =========================
+   GRAPH STATS
+   ========================= */
+
+.graph-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.graph-stat-card {
+  padding: 18px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.graph-stat-label {
+  margin-bottom: 8px;
+  color: #7f8a9d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.graph-stat-value {
+  color: #f3f6fb;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+/* =========================
+   GRAPH CONTAINER
+   ========================= */
+
+.threat-graph-container {
+  position: relative;
+  width: 100%;
+  min-height: 560px;
+  padding: 18px;
+  background: #0b111c;
+  border: 1px solid #202b3d;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.threat-graph-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 520px !important;
+}
+
+/* =========================
+   GRAPH EMPTY STATE
+   ========================= */
+
+.graph-empty {
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.graph-empty-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: rgba(75, 123, 236, 0.1);
+  color: #6d95ef;
+}
+
+.graph-empty h3 {
+  margin: 0 0 8px;
+  color: #e9edf4;
+  font-size: 18px;
+}
+
+.graph-empty p {
+  max-width: 480px;
+  margin: 0;
+  color: #7f8a9d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* =========================
+   LEGEND
+   ========================= */
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 12px;
+}
+
+.graph-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9da8ba;
+  font-size: 12px;
+}
+
+.graph-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #66758b;
+}
+
+/* =========================
+   NODE INFORMATION PANEL
+   ========================= */
+
+.node-details {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.node-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.node-details-title {
+  margin: 0;
+  color: #eef2f7;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.node-details-type {
+  padding: 5px 9px;
+  border: 1px solid #2b374a;
+  border-radius: 999px;
+  background: #0d1421;
+  color: #9aa7ba;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.node-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.node-detail-item {
+  padding: 12px;
+  border: 1px solid #1e2a3b;
+  border-radius: 10px;
+  background: #0c131f;
+}
+
+.node-detail-label {
+  margin-bottom: 5px;
+  color: #707c90;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.node-detail-value {
+  color: #dfe5ed;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* =========================
+   GRAPH ACTION BUTTONS
+   ========================= */
+
+.graph-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.graph-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border: 1px solid #2a374b;
+  border-radius: 9px;
+  background: #111a29;
+  color: #cbd4e2;
+  cursor: pointer;
+  font-size: 13px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.graph-action-btn:hover {
+  background: #172236;
+  border-color: #3d4e67;
+  transform: translateY(-1px);
+}
+
+.graph-action-btn.primary {
+  background: #17294d;
+  border-color: #35599d;
+  color: #dbe7ff;
+}
+
+.graph-action-btn.primary:hover {
+  background: #1c3561;
+}
+
+/* =========================
+   GRAPH RESPONSIVE
+   ========================= */
+
+@media (max-width: 1100px) {
+  .graph-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .graph-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .graph-toolbar-left,
+  .graph-toolbar-right {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 700px) {
+  .graph-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-toolbar-left,
+  .graph-toolbar-right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .graph-toolbar select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .threat-graph-container {
+    min-height: 430px;
+    padding: 10px;
+  }
+
+  .threat-graph-container canvas {
+    height: 400px !important;
+  }
+
+  .node-details-grid {
+    grid-template-columns: 1fr;
+  }
+}

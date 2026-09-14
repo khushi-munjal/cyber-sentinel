@@ -1,0 +1,26 @@
+From: Chief Executive Officer <ceo@executive-office.example>
+To: finance@example.com
+Subject: Urgent Confidential Payment Request
+Date: Sun, 13 Sep 2026 16:15:00 +0530
+Message-ID: <bec-test-003@executive-office.example>
+Reply-To: ceo.private@external-mail.example
+Return-Path: <mailer@external-mail.example>
+Authentication-Results: mail.example.com; spf=fail; dkim=fail; dmarc=fail
+Received-SPF: fail
+Content-Type: text/plain; charset="UTF-8"
+
+Hello,
+
+I am currently in an important meeting and need your immediate
+assistance with a confidential payment.
+
+Please transfer INR 2,50,000 to the new vendor account before
+the end of the business day.
+
+Do not discuss this request with other team members because
+this is confidential.
+
+Please confirm once the transfer has been completed.
+
+Regards,
+CEO

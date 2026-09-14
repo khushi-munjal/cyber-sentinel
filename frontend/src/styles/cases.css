@@ -1,0 +1,235 @@
+/* =========================
+   INVESTIGATION CASES PAGE
+   ========================= */
+
+.cases-page {
+  width: 100%;
+}
+
+.cases-header {
+  margin-bottom: 24px;
+}
+
+.cases-header h1 {
+  margin: 0 0 6px;
+  color: #f4f7fb;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.cases-header p {
+  margin: 0;
+  color: #8f9bad;
+  font-size: 14px;
+}
+
+.cases-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 15px 17px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 12px;
+}
+
+.cases-search {
+  flex: 1;
+  max-width: 360px;
+}
+
+.cases-search input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #2a3649;
+  border-radius: 8px;
+  outline: none;
+  background: #0c131f;
+  color: #dfe5ed;
+  font-size: 13px;
+}
+
+.cases-search input::placeholder {
+  color: #657186;
+}
+
+.cases-search input:focus {
+  border-color: #4b7bec;
+}
+
+.cases-filter {
+  padding: 9px 11px;
+  border: 1px solid #2a3649;
+  border-radius: 8px;
+  outline: none;
+  background: #0c131f;
+  color: #dfe5ed;
+  font-size: 12px;
+}
+
+.cases-table-wrapper {
+  overflow-x: auto;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #202b3d;
+  border-radius: 14px;
+}
+
+.cases-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+}
+
+.cases-table th {
+  padding: 14px 15px;
+  border-bottom: 1px solid #273246;
+  background: #111a29;
+  color: #7f8a9d;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cases-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #1d2737;
+  color: #cbd4df;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.cases-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cases-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.case-id {
+  color: #dce6f5;
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.case-threat {
+  color: #e0e6ef;
+  font-weight: 600;
+}
+
+.case-risk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 65px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.case-risk.critical {
+  background: rgba(205, 67, 67, 0.13);
+  border: 1px solid rgba(205, 67, 67, 0.28);
+  color: #ed9292;
+}
+
+.case-risk.high {
+  background: rgba(216, 119, 62, 0.13);
+  border: 1px solid rgba(216, 119, 62, 0.28);
+  color: #e9a375;
+}
+
+.case-risk.medium {
+  background: rgba(218, 172, 65, 0.13);
+  border: 1px solid rgba(218, 172, 65, 0.28);
+  color: #e2c16d;
+}
+
+.case-risk.low {
+  background: rgba(53, 161, 103, 0.13);
+  border: 1px solid rgba(53, 161, 103, 0.28);
+  color: #81d7a5;
+}
+
+.case-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #8fa0b5;
+  font-size: 11px;
+}
+
+.case-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.case-status.open .case-status-dot {
+  background: #e0a95d;
+}
+
+.case-status.investigating .case-status-dot {
+  background: #5f8fe8;
+}
+
+.case-status.closed .case-status-dot {
+  background: #63c58b;
+}
+
+.case-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 11px;
+  border: 1px solid #2a374b;
+  border-radius: 8px;
+  background: #111a29;
+  color: #bfc9d8;
+  cursor: pointer;
+  font-size: 11px;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.case-action:hover {
+  background: #172236;
+  border-color: #40516b;
+}
+
+.cases-empty {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #7d899d;
+  text-align: center;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .cases-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cases-search {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .cases-header h1 {
+    font-size: 24px;
+  }
+}
