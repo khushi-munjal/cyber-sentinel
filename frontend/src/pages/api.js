@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8001";
+const API_BASE_URL = "https://cyber-sentinel-nkti.onrender.com";
 
 async function parseResponse(response) {
   const data = await response.json().catch(() => ({}));
