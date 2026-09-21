@@ -1,131 +1,28 @@
 import ipaddress
+import os
+import requests
 
 
-# ---------------------------------------------------------
-# DEMO GEO INTELLIGENCE
-# ---------------------------------------------------------
-# These locations are controlled demo locations.
-# They are NOT claimed as the exact physical location
-# of the sender.
-# ---------------------------------------------------------
+# =========================================================
+# GEOLOCATION CONFIGURATION
+# =========================================================
 
-DEMO_LOCATIONS = {
-    "bank-alert.example": {
-        "city": "Delhi",
-        "region": "Delhi",
-        "country": "India",
-        "latitude": 28.6139,
-        "longitude": 77.2090,
-        "isp": "Demo Banking Infrastructure"
-    },
-"ceo-office.example": {
-    "city": "London",
-    "region": "England",
-    "country": "United Kingdom",
-    "latitude": 51.5074,
-    "longitude": -0.1278,
-    "isp": "Demo International Corporate Infrastructure"
-},
+# GeoIP provider.
+#
+# This implementation uses ip-api.com for demonstration.
+# It does NOT use any hardcoded email/domain locations.
+#
+# If you later want to use another provider, only this
+# service needs to be changed.
 
-"college.example": {
-    "city": "Panipat",
-    "region": "Haryana",
-    "country": "India",
-    "latitude": 29.3909,
-    "longitude": 76.9635,
-    "isp": "Demo Educational Infrastructure"
-},
+GEO_API_URL = "http://ip-api.com/json/{ip}"
 
-"account-security.example": {
-    "city": "Samalkha",
-    "region": "Haryana",
-    "country": "India",
-    "latitude": 29.2350,
-    "longitude": 77.1500,
-    "isp": "Demo Security Infrastructure"
-},
-    "secure-login.example": {
-        "city": "Mumbai",
-        "region": "Maharashtra",
-        "country": "India",
-        "latitude": 19.0760,
-        "longitude": 72.8777,
-        "isp": "Demo Cloud Infrastructure"
-    },
+GEO_API_TIMEOUT = 5
 
-    "executive-office.example": {
-        "city": "Bengaluru",
-        "region": "Karnataka",
-        "country": "India",
-        "latitude": 12.9716,
-        "longitude": 77.5946,
-        "isp": "Demo Corporate Infrastructure"
-    },
 
-    "bank-security.example": {
-        "city": "Hyderabad",
-        "region": "Telangana",
-        "country": "India",
-        "latitude": 17.3850,
-        "longitude": 78.4867,
-        "isp": "Demo Financial Infrastructure"
-    },
-
-    "refund-center.example": {
-        "city": "Chennai",
-        "region": "Tamil Nadu",
-        "country": "India",
-        "latitude": 13.0827,
-        "longitude": 80.2707,
-        "isp": "Demo Payment Infrastructure"
-    },
-
-    "invoice-docs.example": {
-        "city": "Pune",
-        "region": "Maharashtra",
-        "country": "India",
-        "latitude": 18.5204,
-        "longitude": 73.8567,
-        "isp": "Demo Hosting Infrastructure"
-    },
-
-    "support-desk.example": {
-        "city": "Kolkata",
-        "region": "West Bengal",
-        "country": "India",
-        "latitude": 22.5726,
-        "longitude": 88.3639,
-        "isp": "Demo Support Infrastructure"
-    },
-
-    "ceo-office.example": {
-        "city": "Jaipur",
-        "region": "Rajasthan",
-        "country": "India",
-        "latitude": 26.9124,
-        "longitude": 75.7873,
-        "isp": "Demo Corporate Infrastructure"
-    },
-
-    "college.example": {
-        "city": "Chandigarh",
-        "region": "Chandigarh",
-        "country": "India",
-        "latitude": 30.7333,
-        "longitude": 76.7794,
-        "isp": "Demo Educational Infrastructure"
-    },
-
-    "account-security.example": {
-        "city": "Ahmedabad",
-        "region": "Gujarat",
-        "country": "India",
-        "latitude": 23.0225,
-        "longitude": 72.5714,
-        "isp": "Demo Security Infrastructure"
-    }
-}
-
+# =========================================================
+# IP VALIDATION
+# =========================================================
 
 def is_public_ip(ip):
     """
@@ -134,61 +31,173 @@ def is_public_ip(ip):
 
     try:
 
-        address = ipaddress.ip_address(
-            ip
-        )
+        address = ipaddress.ip_address(str(ip).strip())
 
-        return (
-            not address.private
-            and not address.loopback
-            and not address.reserved
-            and not address.is_multicast
-        )
+        return address.is_global
 
     except ValueError:
 
         return False
 
 
-def get_demo_location(domain):
+# =========================================================
+# SINGLE IP GEOLOCATION
+# =========================================================
+
+def geolocate_ip(ip):
     """
-    Return controlled demo location
-    based on the email infrastructure domain.
+    Perform approximate geolocation of a public IP.
+
+    Returns city/region/country information when the
+    external GeoIP provider has data for the IP.
+
+    IMPORTANT:
+    This represents approximate IP infrastructure
+    location, NOT the exact physical location of
+    the sender.
     """
 
-    domain = str(
-        domain
-    ).lower().strip()
+    result = {
+        "ip": ip,
+        "available": False,
+        "city": None,
+        "region": None,
+        "country": None,
+        "country_code": None,
+        "latitude": None,
+        "longitude": None,
+        "isp": None,
+        "organization": None,
+        "timezone": None,
+        "source": None,
+        "precision": "APPROXIMATE",
+        "message": None
+    }
 
-    if domain in DEMO_LOCATIONS:
+    # -----------------------------------------------------
+    # Validate IP
+    # -----------------------------------------------------
 
-        location = DEMO_LOCATIONS[
-            domain
-        ].copy()
+    if not is_public_ip(ip):
 
-        location["source"] = "MailTrace AI Demo Geo Dataset"
-
-        location["precision"] = (
-            "City-level demo intelligence"
+        result["message"] = (
+            "IP is private, reserved, loopback, "
+            "or otherwise not publicly routable."
         )
 
-        location["demo_mode"] = True
+        return result
 
-        return location
+    # -----------------------------------------------------
+    # GeoIP request
+    # -----------------------------------------------------
 
-    return None
+    try:
 
+        url = GEO_API_URL.format(
+            ip=str(ip).strip()
+        )
+
+        response = requests.get(
+            url,
+            timeout=GEO_API_TIMEOUT
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        # -------------------------------------------------
+        # Provider response validation
+        # -------------------------------------------------
+
+        if data.get("status") != "success":
+
+            result["message"] = (
+                data.get(
+                    "message",
+                    "GeoIP provider could not locate this IP."
+                )
+            )
+
+            return result
+
+        # -------------------------------------------------
+        # Extract location
+        # -------------------------------------------------
+
+        result["available"] = True
+
+        result["city"] = data.get("city")
+
+        result["region"] = data.get("regionName")
+
+        result["country"] = data.get("country")
+
+        result["country_code"] = data.get("countryCode")
+
+        result["latitude"] = data.get("lat")
+
+        result["longitude"] = data.get("lon")
+
+        result["isp"] = data.get("isp")
+
+        result["organization"] = data.get("org")
+
+        result["timezone"] = data.get("timezone")
+
+        result["source"] = "IP Geolocation"
+
+        result["precision"] = "APPROXIMATE"
+
+        result["message"] = (
+            "Approximate location obtained from "
+            "public IP geolocation."
+        )
+
+        return result
+
+    except requests.Timeout:
+
+        result["message"] = (
+            "GeoIP request timed out."
+        )
+
+        return result
+
+    except requests.RequestException as error:
+
+        result["message"] = (
+            f"GeoIP request failed: {str(error)}"
+        )
+
+        return result
+
+    except Exception as error:
+
+        result["message"] = (
+            f"Unexpected geolocation error: {str(error)}"
+        )
+
+        return result
+
+
+# =========================================================
+# MULTIPLE IP GEOLOCATION
+# =========================================================
 
 def get_geo_intelligence(
     ip_addresses=None,
     domains=None
 ):
     """
-    Generate geo-intelligence for an email.
+    Generate geo-intelligence from actual IP addresses
+    extracted from the uploaded email.
 
-    Demo domains have deterministic locations.
-    Real IPs are classified for public/private status,
-    but exact physical location is NOT inferred.
+    `domains` is retained in the function signature for
+    compatibility with the existing backend, but domains
+    are NOT used to invent or determine a location.
+
+    No demo locations are used.
     """
 
     if ip_addresses is None:
@@ -199,138 +208,216 @@ def get_geo_intelligence(
 
         domains = []
 
-    ip_results = []
+    # -----------------------------------------------------
+    # Remove duplicates
+    # -----------------------------------------------------
+
+    unique_ips = list(
+        dict.fromkeys(
+            str(ip).strip()
+            for ip in ip_addresses
+            if ip
+        )
+    )
 
     public_ips = []
+    non_public_ips = []
 
-    private_ips = []
+    geo_results = []
 
-    for ip in ip_addresses:
+    # -----------------------------------------------------
+    # Classify IPs
+    # -----------------------------------------------------
+
+    for ip in unique_ips:
 
         if is_public_ip(ip):
 
             public_ips.append(ip)
 
-            ip_results.append({
-                "ip": ip,
-                "type": "PUBLIC",
-                "location_available": False,
-                "message": (
-                    "Public IP detected. "
-                    "External IP geolocation can be "
-                    "used for enrichment."
-                )
-            })
-
         else:
 
-            private_ips.append(ip)
+            non_public_ips.append(ip)
 
-            ip_results.append({
-                "ip": ip,
-                "type": "PRIVATE_OR_RESERVED",
-                "location_available": False,
-                "message": (
-                    "Private, reserved or non-routable "
-                    "IP address."
-                )
-            })
+    # -----------------------------------------------------
+    # Geolocate public IPs
+    # -----------------------------------------------------
 
+    for ip in public_ips:
 
-    # -------------------------------------------------
-    # DEMO DOMAIN MATCH
-    # -------------------------------------------------
+        geo_result = geolocate_ip(ip)
 
-    demo_location = None
-
-    for domain in domains:
-
-        demo_location = get_demo_location(
-            domain
+        geo_results.append(
+            geo_result
         )
 
-        if demo_location:
+    # -----------------------------------------------------
+    # Select best available location
+    # -----------------------------------------------------
+
+    selected_location = None
+    selected_ip = None
+
+    for result in geo_results:
+
+        if result.get("available"):
+
+            selected_location = {
+                "city": result.get("city"),
+                "region": result.get("region"),
+                "country": result.get("country"),
+                "country_code": result.get("country_code"),
+                "latitude": result.get("latitude"),
+                "longitude": result.get("longitude"),
+                "isp": result.get("isp"),
+                "organization": result.get("organization"),
+                "timezone": result.get("timezone"),
+                "source": "IP Geolocation",
+                "precision": "Approximate",
+                "demo_mode": False
+            }
+
+            selected_ip = result.get("ip")
 
             break
 
+    # -----------------------------------------------------
+    # LOCATION FOUND
+    # -----------------------------------------------------
 
-    # -------------------------------------------------
-    # FINAL GEO RESULT
-    # -------------------------------------------------
-
-    if demo_location:
+    if selected_location:
 
         return {
+
             "available": True,
-            "mode": "DEMO",
-            "location": demo_location,
+
+            "mode": "IP_GEOLOCATION",
+
+            "source_ip": selected_ip,
+
+            "location": selected_location,
+
+            "locations": geo_results,
+
             "ip_analysis": {
-                "total_ips": len(
-                    ip_addresses
-                ),
+
+                "total_ips": len(unique_ips),
+
                 "public_ips": public_ips,
-                "private_ips": private_ips
+
+                "non_public_ips": non_public_ips,
+
+                "public_ip_count": len(public_ips),
+
+                "non_public_ip_count": len(
+                    non_public_ips
+                )
             },
+
             "message": (
-                "Controlled demo geo-intelligence "
-                "location returned for reliable "
-                "jury demonstration."
+                "Approximate source infrastructure "
+                "location obtained from the public "
+                "IP found in the email headers."
             ),
+
             "precision_policy": (
-                "Location represents city-level "
-                "infrastructure intelligence and "
-                "does not claim an exact physical "
-                "sender location."
-            )
+                "IP geolocation provides an approximate "
+                "network/infrastructure location. It "
+                "does not establish the exact physical "
+                "location of the sender."
+            ),
+
+            "demo_mode": False
         }
 
-
-    # -------------------------------------------------
-    # NO DEMO LOCATION
-    # -------------------------------------------------
+    # -----------------------------------------------------
+    # PUBLIC IP EXISTS BUT GEOLOCATION FAILED
+    # -----------------------------------------------------
 
     if public_ips:
 
         return {
-            "available": True,
-            "mode": "IP_ANALYSIS",
+
+            "available": False,
+
+            "mode": "IP_GEOLOCATION_UNAVAILABLE",
+
+            "source_ip": public_ips[0],
+
             "location": None,
+
+            "locations": geo_results,
+
             "ip_analysis": {
-                "total_ips": len(
-                    ip_addresses
-                ),
+
+                "total_ips": len(unique_ips),
+
                 "public_ips": public_ips,
-                "private_ips": private_ips
+
+                "non_public_ips": non_public_ips,
+
+                "public_ip_count": len(public_ips),
+
+                "non_public_ip_count": len(
+                    non_public_ips
+                )
             },
+
             "message": (
-                "Public IP infrastructure detected. "
-                "External geolocation enrichment "
-                "can be performed."
+                "A public IP was found in the email "
+                "headers, but its approximate location "
+                "could not be obtained."
             ),
+
             "precision_policy": (
-                "Exact physical location is not "
-                "inferred from an IP address."
-            )
+                "No location is invented when the "
+                "GeoIP provider has insufficient data."
+            ),
+
+            "demo_mode": False
         }
 
+    # -----------------------------------------------------
+    # NO PUBLIC IP
+    # -----------------------------------------------------
 
     return {
+
         "available": False,
+
         "mode": "UNAVAILABLE",
+
+        "source_ip": None,
+
         "location": None,
+
+        "locations": [],
+
         "ip_analysis": {
-            "total_ips": len(
-                ip_addresses
-            ),
+
+            "total_ips": len(unique_ips),
+
             "public_ips": [],
-            "private_ips": private_ips
+
+            "non_public_ips": non_public_ips,
+
+            "public_ip_count": 0,
+
+            "non_public_ip_count": len(
+                non_public_ips
+            )
         },
+
         "message": (
-            "No geolocation-ready public "
-            "infrastructure detected."
+            "No publicly routable IP address was "
+            "available in the analyzed email headers."
         ),
+
         "precision_policy": (
-            "No exact physical location "
-            "is inferred."
-        )
+            "No sender location is inferred when "
+            "a usable public IP is unavailable."
+        ),
+
+        "demo_mode": False
     }
+

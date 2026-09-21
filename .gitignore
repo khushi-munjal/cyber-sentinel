@@ -24,3 +24,6 @@ frontend/dist/
 
 # VS Code
 .vscode/
+
+# Generated forensic reports
+backend/reports/

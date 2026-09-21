@@ -1,6 +1,6 @@
+
 import os
 import uuid
-import tempfile
 from datetime import datetime
 
 from fastapi import (
@@ -36,6 +36,10 @@ from services.threat_graph import build_threat_graph
 from services.report_generator import generate_forensic_report
 
 
+# =========================================================
+# APPLICATION
+# =========================================================
+
 app = FastAPI(
     title="MailTrace AI",
     description=(
@@ -46,16 +50,16 @@ app = FastAPI(
 )
 
 
-# ---------------------------------------------------------
-# INITIALIZE DATABASE
-# ---------------------------------------------------------
+# =========================================================
+# DATABASE
+# =========================================================
 
 init_db()
 
 
-# ---------------------------------------------------------
+# =========================================================
 # CORS
-# ---------------------------------------------------------
+# =========================================================
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,19 +70,16 @@ app.add_middleware(
 )
 
 
-# ---------------------------------------------------------
-# IN-MEMORY CASE STORAGE
-# ---------------------------------------------------------
-# Used for the current running backend session.
-# SQLite remains the persistent case store.
-# ---------------------------------------------------------
+# =========================================================
+# IN-MEMORY CASE CACHE
+# =========================================================
 
 CASE_CACHE = {}
 
 
-# ---------------------------------------------------------
+# =========================================================
 # HOME
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get("/")
 def home():
@@ -94,9 +95,9 @@ def home():
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # HEALTH
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get("/health")
 def health():
@@ -107,9 +108,9 @@ def health():
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # CASE LIST
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get("/cases")
 def cases():
@@ -122,9 +123,9 @@ def cases():
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # ANALYZE EMAIL
-# ---------------------------------------------------------
+# =========================================================
 
 @app.post("/analyze")
 async def analyze_email(
@@ -144,9 +145,7 @@ async def analyze_email(
 
     filename = file.filename.lower()
 
-    if not filename.endswith(
-        ".eml"
-    ):
+    if not filename.endswith(".eml"):
 
         raise HTTPException(
             status_code=400,
@@ -155,7 +154,6 @@ async def analyze_email(
                 "are supported."
             )
         )
-
 
     # -----------------------------------------------------
     # READ FILE
@@ -170,7 +168,6 @@ async def analyze_email(
             detail="Uploaded email file is empty."
         )
 
-
     # -----------------------------------------------------
     # CASE ID
     # -----------------------------------------------------
@@ -184,16 +181,13 @@ async def analyze_email(
         + uuid.uuid4().hex[:6].upper()
     )
 
-
     # -----------------------------------------------------
     # PARSE EMAIL
     # -----------------------------------------------------
 
     try:
 
-        email_data = parse_email(
-            content
-        )
+        email_data = parse_email(content)
 
     except Exception as error:
 
@@ -205,14 +199,10 @@ async def analyze_email(
             )
         )
 
-
-    email_data["filename"] = (
-        file.filename
-    )
-
+    email_data["filename"] = file.filename
 
     # -----------------------------------------------------
-    # COMBINE EMAIL TEXT
+    # COMBINE EMAIL CONTENT
     # -----------------------------------------------------
 
     body_text = email_data.get(
@@ -242,28 +232,25 @@ async def analyze_email(
         body_html
     ])
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # HEADER FORENSICS
-    # -----------------------------------------------------
+    # =====================================================
 
     header_result = analyze_headers(
         email_data
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # IOC EXTRACTION
-    # -----------------------------------------------------
+    # =====================================================
 
     ioc_result = extract_iocs(
         email_data
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # URL ANALYSIS
-    # -----------------------------------------------------
+    # =====================================================
 
     url_result = analyze_urls(
         ioc_result.get(
@@ -272,56 +259,71 @@ async def analyze_email(
         )
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # IP ANALYSIS
-    # -----------------------------------------------------
+    # =====================================================
+    #
+    # IMPORTANT:
+    # IPs used for forensic source analysis are taken
+    # from the actual email headers.
+    #
+    # We do NOT depend only on IOC extraction here.
+    #
+    # =====================================================
 
-    ip_result = analyze_ips(
-        ioc_result.get(
-            "ip_addresses",
-            []
-        )
+    header_ips = header_result.get(
+        "extracted_ips",
+        []
     )
 
+    ip_result = analyze_ips(
+        header_ips
+    )
 
-    # -----------------------------------------------------
+    # =====================================================
     # CONTENT ANALYSIS
-    # -----------------------------------------------------
+    # =====================================================
 
     content_result = analyze_content(
         combined_text
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # MACHINE LEARNING
-    # -----------------------------------------------------
+    # =====================================================
 
     ml_result = predict_email(
         combined_text
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # GEO INTELLIGENCE
-    # -----------------------------------------------------
+    # =====================================================
+    #
+    # IMPORTANT:
+    #
+    # Location is determined ONLY from publicly
+    # routable IP addresses found in the actual
+    # email headers.
+    #
+    # Email domains are NOT used to assign a location.
+    #
+    # No hardcoded demo locations are used.
+    #
+    # =====================================================
 
-    geo_result = get_geo_intelligence(
-        ip_addresses=ioc_result.get(
-            "ip_addresses",
-            []
-        ),
-        domains=ioc_result.get(
-            "domains",
-            []
-        )
+    public_header_ips = header_result.get(
+        "public_ips",
+        []
     )
 
+    geo_result = get_geo_intelligence(
+        ip_addresses=public_header_ips
+    )
 
-    # -----------------------------------------------------
+    # =====================================================
     # RISK ENGINE
-    # -----------------------------------------------------
+    # =====================================================
 
     risk_result = calculate_risk(
         ml_result=ml_result,
@@ -332,10 +334,9 @@ async def analyze_email(
         content_result=content_result
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # THREAT GRAPH
-    # -----------------------------------------------------
+    # =====================================================
 
     graph_result = build_threat_graph(
         email_data=email_data,
@@ -343,24 +344,21 @@ async def analyze_email(
         geo_result=geo_result
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # FORENSIC REPORT
-    # -----------------------------------------------------
+    # =====================================================
 
     try:
 
-        report_path = (
-            generate_forensic_report(
-                case_id=case_id,
-                email_data=email_data,
-                risk_result=risk_result,
-                ml_result=ml_result,
-                header_result=header_result,
-                ioc_result=ioc_result,
-                geo_result=geo_result,
-                graph_result=graph_result
-            )
+        report_path = generate_forensic_report(
+            case_id=case_id,
+            email_data=email_data,
+            risk_result=risk_result,
+            ml_result=ml_result,
+            header_result=header_result,
+            ioc_result=ioc_result,
+            geo_result=geo_result,
+            graph_result=graph_result
         )
 
     except Exception as error:
@@ -372,10 +370,9 @@ async def analyze_email(
             error
         )
 
-
-    # -----------------------------------------------------
-    # SAVE CASE TO DATABASE
-    # -----------------------------------------------------
+    # =====================================================
+    # SAVE CASE
+    # =====================================================
 
     save_case(
         case_id=case_id,
@@ -402,117 +399,149 @@ async def analyze_email(
         )
     )
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # FINAL RESPONSE
-    # -----------------------------------------------------
+    # =====================================================
 
     result = {
 
         "case_id": case_id,
 
-        "status":
-            "Analysis completed successfully",
+        "status": (
+            "Analysis completed successfully"
+        ),
+
+        # -------------------------------------------------
+        # EMAIL
+        # -------------------------------------------------
 
         "email": {
-            "filename":
-                file.filename,
 
-            "sender":
-                email_data.get(
-                    "sender",
-                    ""
-                ),
+            "filename": file.filename,
 
-            "receiver":
-                email_data.get(
-                    "receiver",
-                    ""
-                ),
+            "sender": email_data.get(
+                "sender",
+                ""
+            ),
 
-            "subject":
-                email_data.get(
-                    "subject",
-                    ""
-                ),
+            "receiver": email_data.get(
+                "receiver",
+                ""
+            ),
 
-            "date":
-                email_data.get(
-                    "date",
-                    ""
-                ),
+            "subject": email_data.get(
+                "subject",
+                ""
+            ),
 
-            "reply_to":
-                email_data.get(
-                    "reply_to",
-                    ""
-                ),
+            "date": email_data.get(
+                "date",
+                ""
+            ),
 
-            "return_path":
-                email_data.get(
-                    "return_path",
-                    ""
-                )
+            "reply_to": email_data.get(
+                "reply_to",
+                ""
+            ),
+
+            "return_path": email_data.get(
+                "return_path",
+                ""
+            )
         },
 
-        "risk":
-            risk_result,
+        # -------------------------------------------------
+        # RISK
+        # -------------------------------------------------
 
-        "machine_learning":
-            ml_result,
+        "risk": risk_result,
 
-        "headers":
-            header_result,
+        # -------------------------------------------------
+        # MACHINE LEARNING
+        # -------------------------------------------------
 
-        "iocs":
-            ioc_result,
+        "machine_learning": ml_result,
 
-        "url_analysis":
-            url_result,
+        # -------------------------------------------------
+        # HEADERS
+        # -------------------------------------------------
 
-        "ip_analysis":
-            ip_result,
+        "headers": header_result,
 
-        "content_analysis":
-            content_result,
+        # -------------------------------------------------
+        # IOCS
+        # -------------------------------------------------
 
-        "geo_intelligence":
-            geo_result,
+        "iocs": ioc_result,
 
-        "threat_graph":
-            graph_result,
+        # -------------------------------------------------
+        # URL ANALYSIS
+        # -------------------------------------------------
+
+        "url_analysis": url_result,
+
+        # -------------------------------------------------
+        # IP ANALYSIS
+        # -------------------------------------------------
+
+        "ip_analysis": ip_result,
+
+        # -------------------------------------------------
+        # CONTENT ANALYSIS
+        # -------------------------------------------------
+
+        "content_analysis": content_result,
+
+        # -------------------------------------------------
+        # GEO INTELLIGENCE
+        # -------------------------------------------------
+
+        "geo_intelligence": geo_result,
+
+        # -------------------------------------------------
+        # THREAT GRAPH
+        # -------------------------------------------------
+
+        "threat_graph": graph_result,
+
+        # -------------------------------------------------
+        # FORENSIC REPORT
+        # -------------------------------------------------
 
         "forensic_report": {
-            "available":
-                report_path is not None,
 
-            "filename":
+            "available": (
+                report_path is not None
+            ),
+
+            "filename": (
                 os.path.basename(
                     report_path
                 )
                 if report_path
                 else None
+            )
         }
     }
 
+    # =====================================================
+    # CACHE COMPLETE RESULT
+    # =====================================================
 
-    # -----------------------------------------------------
-    # CACHE FULL RESULT
-    # -----------------------------------------------------
+    CASE_CACHE[case_id] = result
 
-    CASE_CACHE[
-        case_id
-    ] = result
-
+    # =====================================================
+    # RETURN
+    # =====================================================
 
     return JSONResponse(
         content=result
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GET SINGLE CASE
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get(
     "/cases/{case_id}"
@@ -523,9 +552,7 @@ def get_single_case(
 
     if case_id in CASE_CACHE:
 
-        return CASE_CACHE[
-            case_id
-        ]
+        return CASE_CACHE[case_id]
 
     raise HTTPException(
         status_code=404,
@@ -533,9 +560,9 @@ def get_single_case(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # THREAT GRAPH
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get(
     "/threat-graph/{case_id}"
@@ -561,9 +588,9 @@ def get_threat_graph(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GEO INTELLIGENCE
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get(
     "/geo/{case_id}"
@@ -589,9 +616,9 @@ def get_geo(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # ANALYTICS
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get("/analytics")
 def analytics():
@@ -632,50 +659,41 @@ def analytics():
 
             low_risk += 1
 
-
     return {
-        "total_cases":
-            total_cases,
+
+        "total_cases": total_cases,
 
         "risk_distribution": {
-            "critical":
-                critical_risk,
 
-            "high":
-                high_risk,
+            "critical": critical_risk,
 
-            "medium":
-                medium_risk,
+            "high": high_risk,
 
-            "low":
-                low_risk
+            "medium": medium_risk,
+
+            "low": low_risk
         },
 
         "engine": {
-            "ml_detection":
-                True,
 
-            "header_forensics":
-                True,
+            "ml_detection": True,
 
-            "ioc_extraction":
-                True,
+            "header_forensics": True,
 
-            "geo_intelligence":
-                True,
+            "ioc_extraction": True,
 
-            "threat_graph":
-                True,
+            "geo_intelligence": True,
 
-            "forensic_reporting":
-                True
+            "threat_graph": True,
+
+            "forensic_reporting": True
         }
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # DOWNLOAD FORENSIC REPORT
-# ---------------------------------------------------------
+# =========================================================
 
 @app.get(
     "/reports/{case_id}"
@@ -708,3 +726,4 @@ def download_report(
             f"{case_id}_forensic_report.pdf"
         )
     )
+

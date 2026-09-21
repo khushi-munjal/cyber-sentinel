@@ -18,7 +18,12 @@ def calculate_risk(
     - IP intelligence
     - Content analysis
 
-    The final score is 0-100.
+    Important principles:
+    - Public IP != malicious IP
+    - Missing authentication != authentication failure
+    - Low-confidence ML is only a supporting signal
+    - Generic words such as "login" are not enough to mark phishing
+    - Final verdict is based on correlated evidence
     """
 
     score = 0.0
@@ -29,9 +34,8 @@ def calculate_risk(
     # 1. MACHINE LEARNING
     # =====================================================
 
-    ml_available = ml_result.get(
-        "available",
-        False
+    ml_available = bool(
+        ml_result.get("available", False)
     )
 
     ml_prediction = str(
@@ -48,15 +52,43 @@ def calculate_risk(
         )
     )
 
+    ml_confidence_level = str(
+        ml_result.get(
+            "confidence_level",
+            ""
+        )
+    ).upper()
+
+    ml_usable = bool(
+        ml_result.get(
+            "usable_for_primary_verdict",
+            False
+        )
+    )
+
+    ml_score = 0.0
+
     if ml_available:
 
-        # ML is a supporting signal.
-        # We intentionally do NOT allow low model confidence
-        # to hide strong forensic evidence.
-        ml_score = min(
-            ml_confidence * 20,
-            20
-        )
+        # ML contributes only a limited amount.
+        #
+        # Low-confidence predictions do NOT receive
+        # a strong score contribution.
+
+        if ml_confidence >= 0.70:
+            ml_score = min(
+                ml_confidence * 15,
+                15
+            )
+
+        elif ml_confidence >= 0.40:
+            ml_score = min(
+                ml_confidence * 8,
+                5
+            )
+
+        else:
+            ml_score = 0.0
 
         score += ml_score
 
@@ -67,24 +99,63 @@ def calculate_risk(
                 ml_confidence * 100,
                 2
             ),
+            "confidence_level": (
+                ml_confidence_level
+                if ml_confidence_level
+                else "UNKNOWN"
+            ),
+            "usable_for_primary_verdict": ml_usable,
             "score_contribution": round(
                 ml_score,
                 2
             )
         })
 
-        if ml_prediction != "legitimate":
+        # IMPORTANT:
+        # Do not create a threat reason merely because
+        # the model selected a non-legitimate class.
+        #
+        # Only strong/moderate model signals are reported
+        # as meaningful evidence.
+
+        if ml_usable and ml_prediction != "legitimate":
+
+            severity = (
+                "HIGH"
+                if ml_confidence >= 0.70
+                else "MEDIUM"
+            )
 
             reasons.append({
                 "category": "ML Threat Classification",
-                "severity": "HIGH",
+                "severity": severity,
                 "message": (
-                    "ML model identified the email as "
+                    "ML model classified the email as "
                     + ml_prediction.replace(
                         "_",
                         " "
                     ).title()
-                    + "."
+                    + " with "
+                    + str(round(
+                        ml_confidence * 100,
+                        2
+                    ))
+                    + "% confidence."
+                )
+            })
+
+        elif (
+            ml_available
+            and ml_confidence < 0.40
+        ):
+
+            reasons.append({
+                "category": "ML Evidence",
+                "severity": "LOW",
+                "message": (
+                    "ML classification confidence is low; "
+                    "the model prediction is not used as "
+                    "a primary threat verdict."
                 )
             })
 
@@ -94,9 +165,10 @@ def calculate_risk(
             "source": "Machine Learning",
             "signal": "unavailable",
             "confidence": 0,
+            "confidence_level": "NONE",
+            "usable_for_primary_verdict": False,
             "score_contribution": 0
         })
-
 
     # =====================================================
     # 2. HEADER FORENSICS
@@ -114,9 +186,33 @@ def calculate_risk(
         {}
     )
 
-    header_score = 0
+    header_score = 0.0
 
+    spf = str(
+        authentication.get(
+            "spf",
+            "NOT_FOUND"
+        )
+    ).upper()
+
+    dkim = str(
+        authentication.get(
+            "dkim",
+            "NOT_FOUND"
+        )
+    ).upper()
+
+    dmarc = str(
+        authentication.get(
+            "dmarc",
+            "NOT_FOUND"
+        )
+    ).upper()
+
+    # -----------------------------------------------------
     # Header anomalies
+    # -----------------------------------------------------
+
     if anomaly_count > 0:
 
         anomaly_score = min(
@@ -143,14 +239,9 @@ def calculate_risk(
                 )
             })
 
-
+    # -----------------------------------------------------
     # SPF
-    spf = str(
-        authentication.get(
-            "spf",
-            "NOT_FOUND"
-        )
-    ).upper()
+    # -----------------------------------------------------
 
     if spf == "FAIL":
 
@@ -159,17 +250,14 @@ def calculate_risk(
         reasons.append({
             "category": "Authentication",
             "severity": "HIGH",
-            "message": "SPF authentication failed."
+            "message": (
+                "SPF authentication failed."
+            )
         })
 
-
+    # -----------------------------------------------------
     # DKIM
-    dkim = str(
-        authentication.get(
-            "dkim",
-            "NOT_FOUND"
-        )
-    ).upper()
+    # -----------------------------------------------------
 
     if dkim == "FAIL":
 
@@ -178,17 +266,14 @@ def calculate_risk(
         reasons.append({
             "category": "Authentication",
             "severity": "HIGH",
-            "message": "DKIM authentication failed."
+            "message": (
+                "DKIM authentication failed."
+            )
         })
 
-
+    # -----------------------------------------------------
     # DMARC
-    dmarc = str(
-        authentication.get(
-            "dmarc",
-            "NOT_FOUND"
-        )
-    ).upper()
+    # -----------------------------------------------------
 
     if dmarc == "FAIL":
 
@@ -197,9 +282,10 @@ def calculate_risk(
         reasons.append({
             "category": "Authentication",
             "severity": "HIGH",
-            "message": "DMARC authentication failed."
+            "message": (
+                "DMARC authentication failed."
+            )
         })
-
 
     header_score = min(
         header_score,
@@ -214,9 +300,11 @@ def calculate_risk(
         "spf": spf,
         "dkim": dkim,
         "dmarc": dmarc,
-        "score_contribution": header_score
+        "score_contribution": round(
+            header_score,
+            2
+        )
     })
-
 
     # =====================================================
     # 3. IOC ANALYSIS
@@ -234,9 +322,15 @@ def calculate_risk(
         )
     )
 
+    # Number of extracted IOCs alone does not prove
+    # maliciousness. URLs/emails/domains can be legitimate.
+    #
+    # Therefore IOC quantity receives only a small
+    # supporting contribution.
+
     ioc_score = min(
-        total_iocs * 2,
-        10
+        total_iocs * 0.5,
+        5
     )
 
     score += ioc_score
@@ -245,26 +339,30 @@ def calculate_risk(
 
         reasons.append({
             "category": "IOC Analysis",
-            "severity": "MEDIUM",
+            "severity": "LOW",
             "message": (
                 str(total_iocs)
-                + " indicators of compromise "
-                + "were extracted."
+                + " indicators were extracted "
+                "for further analysis."
             )
         })
 
     evidence.append({
         "source": "IOC Analysis",
         "total_iocs": total_iocs,
-        "score_contribution": ioc_score
+        "score_contribution": round(
+            ioc_score,
+            2
+        )
     })
-
 
     # =====================================================
     # 4. URL ANALYSIS
     # =====================================================
 
     url_score = 0.0
+
+    url_findings = []
 
     if isinstance(
         url_result,
@@ -279,22 +377,34 @@ def calculate_risk(
         )
 
         url_score = min(
-            url_score,
-            10
+            max(url_score, 0),
+            15
         )
 
-        if url_score > 0:
+        url_findings = url_result.get(
+            "findings",
+            []
+        )
+
+        if url_score >= 7:
 
             reasons.append({
                 "category": "URL Analysis",
-                "severity": (
-                    "HIGH"
-                    if url_score >= 7
-                    else "MEDIUM"
-                ),
+                "severity": "HIGH",
                 "message": (
                     "Suspicious URL characteristics "
                     "were detected."
+                )
+            })
+
+        elif url_score > 0:
+
+            reasons.append({
+                "category": "URL Analysis",
+                "severity": "MEDIUM",
+                "message": (
+                    "The email contains URL characteristics "
+                    "that require further investigation."
                 )
             })
 
@@ -305,9 +415,9 @@ def calculate_risk(
         "score_contribution": round(
             url_score,
             2
-        )
+        ),
+        "findings": url_findings
     })
-
 
     # =====================================================
     # 5. IP ANALYSIS
@@ -315,10 +425,17 @@ def calculate_risk(
 
     ip_score = 0.0
 
+    ip_findings = []
+
     if isinstance(
         ip_result,
         dict
     ):
+
+        # IMPORTANT:
+        # A public IP is normal.
+        # Do not automatically add risk because
+        # an IP is externally routable.
 
         ip_score = float(
             ip_result.get(
@@ -328,9 +445,17 @@ def calculate_risk(
         )
 
         ip_score = min(
-            ip_score,
+            max(ip_score, 0),
             5
         )
+
+        ip_findings = ip_result.get(
+            "results",
+            []
+        )
+
+        # Only report IP risk if the IP analysis itself
+        # has an actual suspicious finding.
 
         if ip_score > 0:
 
@@ -338,8 +463,8 @@ def calculate_risk(
                 "category": "IP Intelligence",
                 "severity": "MEDIUM",
                 "message": (
-                    "Suspicious or externally routable "
-                    "IP infrastructure was detected."
+                    "IP analysis identified a special-use "
+                    "or otherwise noteworthy IP characteristic."
                 )
             })
 
@@ -350,9 +475,9 @@ def calculate_risk(
         "score_contribution": round(
             ip_score,
             2
-        )
+        ),
+        "findings": ip_findings
     })
-
 
     # =====================================================
     # 6. CONTENT ANALYSIS
@@ -363,6 +488,8 @@ def calculate_risk(
     raw_content_score = 0.0
 
     content_categories = []
+
+    content_indicators = {}
 
     if isinstance(
         content_result,
@@ -381,32 +508,47 @@ def calculate_risk(
             []
         )
 
-        # Content gets up to 20 points.
+        content_indicators = content_result.get(
+            "indicators",
+            {}
+        )
+
+        # Content is capped at 20 points.
+
         content_score = min(
-            raw_content_score * 0.20,
+            max(raw_content_score * 0.20, 0),
             20
         )
 
         score += content_score
 
-        if raw_content_score > 0:
+        # Do not call generic login/sign-in language
+        # automatically malicious.
+
+        meaningful_content_signal = (
+            raw_content_score >= 50
+            or len(content_categories) >= 2
+        )
+
+        if meaningful_content_signal:
 
             reasons.append({
                 "category": "Content Analysis",
                 "severity": (
                     "HIGH"
-                    if raw_content_score >= 60
+                    if raw_content_score >= 70
                     else "MEDIUM"
                 ),
                 "message": (
-                    "Suspicious language patterns detected: "
+                    "Content analysis identified "
+                    "potentially suspicious language patterns: "
                     + (
                         ", ".join(
-                            content_categories
+                            str(category)
+                            for category in content_categories
                         )
                         if content_categories
-                        else
-                        "suspicious content"
+                        else "suspicious content"
                     )
                 )
             })
@@ -415,23 +557,18 @@ def calculate_risk(
         "source": "Content Analysis",
         "raw_score": raw_content_score,
         "categories": content_categories,
+        "indicators": content_indicators,
         "score_contribution": round(
             content_score,
             2
         )
     })
 
-
     # =====================================================
-    # 7. STRONG FORENSIC SIGNALS
+    # 7. FORENSIC CORRELATION
     # =====================================================
-    #
-    # These rules prevent a low-confidence ML prediction
-    # from incorrectly marking an obviously suspicious email
-    # as LOW risk.
-    #
 
-    forensic_bonus = 0
+    forensic_bonus = 0.0
 
     failed_auth_count = 0
 
@@ -444,8 +581,10 @@ def calculate_risk(
     if dmarc == "FAIL":
         failed_auth_count += 1
 
-
+    # -----------------------------------------------------
     # Multiple authentication failures
+    # -----------------------------------------------------
+
     if failed_auth_count >= 2:
 
         forensic_bonus += 10
@@ -454,63 +593,98 @@ def calculate_risk(
             "category": "Forensic Correlation",
             "severity": "HIGH",
             "message": (
-                "Multiple email authentication "
+                "Multiple sender authentication "
                 "mechanisms failed."
             )
         })
 
+    # -----------------------------------------------------
+    # Strong content correlation
+    # -----------------------------------------------------
 
-    # Strong social-engineering/payment signal
     lower_categories = [
         str(category).lower()
         for category in content_categories
     ]
 
-    payment_signal = any(
-        keyword in lower_categories
-        for keyword in [
-            "financial fraud",
-            "account takeover",
-            "credential theft",
-            "social engineering",
-            "otp fraud"
-        ]
-    )
+    high_risk_categories = {
+        "financial fraud",
+        "otp fraud",
+        "credential theft",
+        "account takeover",
+        "social engineering"
+    }
 
-    if payment_signal:
+    detected_high_risk_categories = [
+        category
+        for category in lower_categories
+        if category in high_risk_categories
+    ]
 
-        forensic_bonus += 10
+    # Require stronger content evidence before
+    # applying a correlation bonus.
+
+    if (
+        detected_high_risk_categories
+        and raw_content_score >= 50
+    ):
+
+        forensic_bonus += 8
 
         reasons.append({
             "category": "Threat Correlation",
             "severity": "HIGH",
             "message": (
                 "Content analysis indicates a "
-                "high-risk social-engineering or "
-                "fraud-related pattern."
+                "potentially high-risk "
+                "social-engineering or fraud pattern."
             )
         })
 
+    # -----------------------------------------------------
+    # BEC correlation
+    # -----------------------------------------------------
 
-    # BEC-specific correlation
-    if (
+    # CRITICAL CHANGE:
+    #
+    # Low-confidence ML prediction of BEC alone
+    # cannot create a CRITICAL finding.
+
+    strong_bec_signal = (
         ml_prediction == "bec"
-        or "bec" in lower_categories
+        and ml_confidence >= 0.70
+        and ml_usable
+    )
+
+    content_bec_signal = any(
+        "bec" in category
+        or "business email compromise" in category
+        for category in lower_categories
+    )
+
+    if (
+        strong_bec_signal
+        or (
+            content_bec_signal
+            and raw_content_score >= 60
+        )
     ):
 
-        forensic_bonus += 15
+        forensic_bonus += 10
 
         reasons.append({
             "category": "BEC Detection",
-            "severity": "CRITICAL",
+            "severity": "HIGH",
             "message": (
-                "Business Email Compromise indicators "
-                "were detected."
+                "Multiple available signals support "
+                "a Business Email Compromise pattern."
             )
         })
 
+    # -----------------------------------------------------
+    # Header anomaly + authentication failure
+    # -----------------------------------------------------
 
-    # Header anomaly + failed authentication
     if (
         anomaly_count > 0
         and failed_auth_count >= 1
@@ -527,19 +701,20 @@ def calculate_risk(
             )
         })
 
-
     forensic_bonus = min(
         forensic_bonus,
-        35
+        25
     )
 
     score += forensic_bonus
 
     evidence.append({
         "source": "Forensic Correlation",
-        "score_contribution": forensic_bonus
+        "score_contribution": round(
+            forensic_bonus,
+            2
+        )
     })
-
 
     # =====================================================
     # 8. FINAL SCORE
@@ -547,15 +722,11 @@ def calculate_risk(
 
     score = round(
         min(
-            max(
-                score,
-                0
-            ),
+            max(score, 0),
             100
         ),
         2
     )
-
 
     # =====================================================
     # 9. RISK LEVEL
@@ -577,80 +748,217 @@ def calculate_risk(
 
         risk_level = "LOW"
 
-
     # =====================================================
     # 10. PRIMARY THREAT
     # =====================================================
 
+    # Strong ML signal gets priority.
+
     if (
-        ml_available
+        ml_usable
         and ml_prediction != "legitimate"
+        and ml_confidence >= 0.70
     ):
 
         primary_threat = ml_prediction
 
-    elif content_categories:
+    # Otherwise use meaningful content evidence.
 
-        primary_threat = content_categories[0]
+    elif (
+        content_categories
+        and raw_content_score >= 50
+    ):
+
+        primary_threat = str(
+            content_categories[0]
+        )
+
+    # If there are strong forensic signals but no
+    # reliable threat category, keep it generic.
+
+    elif (
+        failed_auth_count >= 2
+        or anomaly_count >= 2
+        or url_score >= 10
+    ):
+
+        primary_threat = "suspicious_activity"
 
     else:
 
         primary_threat = "legitimate"
 
-
     # =====================================================
-    # 11. THREAT DETECTED
+    # 11. FINAL VERDICT
     # =====================================================
 
-    threat_detected = (
-        primary_threat != "legitimate"
-        and risk_level != "LOW"
+    strong_forensic_signal = (
+        failed_auth_count >= 2
+        or anomaly_count >= 2
+        or url_score >= 10
+        or (
+            raw_content_score >= 70
+            and bool(content_categories)
+        )
+        or (
+            ml_usable
+            and ml_prediction != "legitimate"
+            and ml_confidence >= 0.70
+        )
     )
 
+    moderate_forensic_signal = (
+        anomaly_count >= 1
+        or failed_auth_count >= 1
+        or url_score >= 5
+        or (
+            raw_content_score >= 50
+            and bool(content_categories)
+        )
+        or (
+            ml_usable
+            and ml_prediction != "legitimate"
+            and ml_confidence >= 0.40
+        )
+    )
+
+    # -----------------------------------------------------
+    # Likely phishing / threat
+    # -----------------------------------------------------
+
+    if (
+        risk_level in {"HIGH", "CRITICAL"}
+        and strong_forensic_signal
+    ):
+
+        verdict = "LIKELY_THREAT"
+        threat_detected = True
+
+    # -----------------------------------------------------
+    # Suspicious
+    # -----------------------------------------------------
+
+    elif (
+        risk_level == "MEDIUM"
+        and moderate_forensic_signal
+    ):
+
+        verdict = "SUSPICIOUS"
+        threat_detected = True
+
+    # -----------------------------------------------------
+    # Insufficient evidence
+    # -----------------------------------------------------
+
+    elif (
+        ml_available
+        and ml_confidence < 0.40
+        and not strong_forensic_signal
+        and not moderate_forensic_signal
+    ):
+
+        verdict = "INSUFFICIENT_EVIDENCE"
+        threat_detected = False
+
+    # -----------------------------------------------------
+    # Likely legitimate
+    # -----------------------------------------------------
+
+    else:
+
+        verdict = "LIKELY_LEGITIMATE"
+        threat_detected = False
 
     # =====================================================
-    # 12. RECOMMENDED ACTION
+    # 12. AUTHENTICATION SUMMARY
     # =====================================================
 
-    if risk_level == "CRITICAL":
+    authentication_summary = {
+        "spf": spf,
+        "dkim": dkim,
+        "dmarc": dmarc
+    }
+
+    # =====================================================
+    # 13. RECOMMENDED ACTION
+    # =====================================================
+
+    if verdict == "LIKELY_THREAT":
 
         recommended_action = (
-            "Immediate containment, sender verification "
-            "and forensic investigation recommended."
+            "Treat the email as potentially malicious. "
+            "Verify the sender through an independent channel, "
+            "inspect URLs and IOCs, and perform forensic "
+            "investigation before interacting with the message."
         )
 
-    elif risk_level == "HIGH":
+    elif verdict == "SUSPICIOUS":
 
         recommended_action = (
-            "Investigate sender, authentication results, "
-            "content and available IOCs immediately."
+            "Perform additional investigation. "
+            "Verify sender identity, inspect authentication "
+            "results, URLs, content and available IOCs."
         )
 
-    elif risk_level == "MEDIUM":
+    elif verdict == "INSUFFICIENT_EVIDENCE":
 
         recommended_action = (
-            "Further investigation and manual "
-            "verification recommended."
+            "The available evidence is insufficient for a "
+            "reliable threat classification. Review the "
+            "original headers and additional forensic evidence."
         )
 
     else:
 
         recommended_action = (
-            "No immediate threat detected; "
-            "continue normal monitoring."
+            "No strong malicious indicators were identified "
+            "by the available forensic signals. Continue "
+            "normal monitoring and verify unexpected requests."
         )
 
+    # =====================================================
+    # 14. EVIDENCE SUMMARY
+    # =====================================================
+
+    evidence_summary = {
+        "ml": {
+            "available": ml_available,
+            "prediction": ml_prediction,
+            "confidence_percent": round(
+                ml_confidence * 100,
+                2
+            ),
+            "usable_for_primary_verdict": ml_usable
+        },
+        "authentication": authentication_summary,
+        "header_anomalies": anomaly_count,
+        "ioc_count": total_iocs,
+        "url_score": round(
+            url_score,
+            2
+        ),
+        "ip_score": round(
+            ip_score,
+            2
+        ),
+        "content_score": round(
+            raw_content_score,
+            2
+        )
+    }
 
     # =====================================================
-    # 13. FINAL RESULT
+    # 15. FINAL RESULT
     # =====================================================
 
     return {
         "score": score,
         "level": risk_level,
+        "verdict": verdict,
         "threat_detected": threat_detected,
         "primary_threat": primary_threat,
         "reasons": reasons,
         "evidence": evidence,
+        "evidence_summary": evidence_summary,
         "recommended_action": recommended_action
     }

@@ -1,0 +1,32 @@
+From: Security Team <security-alert@example-secure.test>
+To: khushi@example.com
+Subject: URGENT: Verify Your Account Within 24 Hours
+Date: Mon, 21 Sep 2026 15:20:00 +0000
+Message-ID: <test-phishing-001@example-secure.test>
+Reply-To: support@account-verification.test
+Return-Path: <bounce@account-verification.test>
+Received: from suspicious-host.example.net (203.0.113.55) by mail.example.com;
+        Mon, 21 Sep 2026 15:19:58 +0000
+Authentication-Results: mail.example.com;
+        spf=fail smtp.mailfrom=account-verification.test;
+        dkim=fail header.d=account-verification.test;
+        dmarc=fail header.from=example-secure.test
+
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Customer,
+
+We detected unusual activity on your account.
+
+Your account will be suspended within 24 hours unless you verify your identity immediately.
+
+Please click the link below and enter your username and password to restore access:
+
+http://account-verification.test/secure-login
+
+You may also be asked to enter your OTP and verification code.
+
+If you do not complete the verification immediately, your account will be permanently closed.
+
+Security Team
